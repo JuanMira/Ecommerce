@@ -4,7 +4,7 @@ namespace Ecommerce.Repository
 {
     public interface IUserRepository
     {
-        Task<User> Create(User user);
+        bool Create(User user);
         User GetUser(int id);
     }
 }
