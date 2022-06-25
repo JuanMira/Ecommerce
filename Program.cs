@@ -1,9 +1,11 @@
+using System.Globalization;
 using System.Text;
 using Ecommerce.Data;
 using Ecommerce.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 var connection = builder.Configuration["Connection"];
@@ -13,10 +15,8 @@ var connection = builder.Configuration["Connection"];
 builder.Services.AddMvc();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(cfg =>
-{
-    cfg.UseNpgsql(connection);
-});
+builder.Services.AddDbContext<ApplicationDbContext>(conf => conf.UseNpgsql(connection));
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -37,8 +37,7 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-builder.Services.AddSingleton<IJWTManagerRepository, JWTManagerRepository>();
-builder.Services.AddSingleton<ApplicationDbContext>();
+builder.Services.AddScoped<IJWTManagerRepository, JWTManagerRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -50,13 +49,25 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.MapGet("/getRoutes", (IActionDescriptorCollectionProvider provider) =>
+    {
+        var urls = provider.ActionDescriptors.Items
+            .Select(descriptor => '/' + string.Join("/", descriptor.RouteValues.Values
+                                                                        .Where(v => v != null)
+                                                                        .Reverse()))
+            .Distinct()
+            .ToList();
+        return urls;
+
+    });
 }
 
 app.UseHttpsRedirection();
 app.UseCookiePolicy();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
 
 app.Run();
