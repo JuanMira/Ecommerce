@@ -3,35 +3,44 @@ using Ecommerce.Models;
 using Ecommerce.Repository;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ecommerce.Controllers
+namespace Ecommerce.Controllers;
+
+[ApiController]
+[Route("/authentication")]
+public class AccountController : ControllerBase
 {
-    [Route("[controller]")]
-    public class AccountController : Controller
+    private readonly IJWTManagerRepository _jwt;
+    private readonly IUserRepository _uRepository;
+
+    public AccountController(IJWTManagerRepository jwt, IUserRepository uRepository)
     {
+        _jwt = jwt;
+        _uRepository = uRepository;
+    }
 
+    [HttpGet]
+    public string GetExample() => "Testing routes";
 
-        private readonly IJWTManagerRepository _jwt;
-        private readonly IUserRepository _uRepository;
+    [HttpPost]
+    [Route("login")]
+    public IActionResult Login(Login login)
+    {
+        var token = _jwt.Authenticate(login.Username, login.Password);
+        return token != null ? Ok(token) : NotFound(new { Message = "Can't get credential try again" });
+    }
 
-        public AccountController(IJWTManagerRepository jwt, IUserRepository uRepository)
+    [HttpPost]
+    [Route("register")]
+    public IActionResult Register(User user)
+    {
+        Console.WriteLine("Posted");
+        if (user is null)
         {
-            _jwt = jwt;
-            _uRepository = uRepository;
+            return NotFound(new { Message = "User is empty" });
         }
 
-        [HttpPost("/Login")]
-        public IActionResult Login(string username, string password)
-        {
-            var token = _jwt.Authenticate(username, password);
-            return token != null ? Ok(token) : NotFound(new { Message = "Can't get credential try again" });
-        }
-
-        [HttpPost("/Register")]
-        public IActionResult Register(User user)
-        {
-            user.Password = Helpers.PasswordHelper.EncryptPassword(user?.Password);
-            var userFound = _uRepository.Create(user);
-            return userFound != null ? Ok(new { Message = "User created successfully" }) : NoContent();
-        }
+        user.Password = Helpers.PasswordHelper.EncryptPassword(user?.Password);
+        var userFound = _uRepository.Create(user);
+        return userFound ? Ok(new { Message = "User created successfully" }) : NoContent();
     }
 }
