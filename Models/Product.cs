@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Ecommerce.Models
 {
     public class Product
@@ -9,7 +11,12 @@ namespace Ecommerce.Models
         public float Price { get; set; }
         public int Stock { get; set; }
 
+        [ForeignKey("Score")]
+        public int ScoreId { get; set; }
         public Score? Score { get; set; }
+
+        [ForeignKey("Category")]
+        public int CategoryId { get; set; }
         public Category? Category { get; set; }
     }
 }
