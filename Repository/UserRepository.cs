@@ -12,12 +12,21 @@ namespace Ecommerce.Repository
             _ctx = ctx;
         }
 
-        public async Task<User> Create(User user)
+        public bool Create(User user)
         {
-            var userFound = await _ctx.User.AddAsync(user);
-            if (userFound != null)
-                return userFound.Entity;
-            return null;
+            var userFound = _ctx.Users.Add(user);
+            Console.WriteLine(user.ToString());
+            try
+            {
+                _ctx.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
+
         }
 
         public User GetUser(int id)

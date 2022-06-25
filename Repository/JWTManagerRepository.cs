@@ -24,7 +24,7 @@ namespace Ecommerce.Repository
             if (username == null && password == null)
                 throw new Exception("User not found");
 
-            var userFound = await _ctx.User.Where(x => x.Username.Equals(username)).FirstAsync();
+            var userFound = await _ctx.Users.Where(x => x.Username.Equals(username)).FirstAsync();
 
             if (userFound == null)
                 throw new Exception("Can't find user");
