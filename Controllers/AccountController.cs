@@ -33,7 +33,6 @@ public class AccountController : ControllerBase
     [Route("register")]
     public IActionResult Register(User user)
     {
-        Console.WriteLine("Posted");
         if (user is null)
         {
             return NotFound(new { Message = "User is empty" });
