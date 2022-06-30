@@ -31,7 +31,16 @@ namespace Ecommerce.Repository
 
         public User GetUser(int id)
         {
-            throw new NotImplementedException();
+            if (id == 0)
+                throw new Exception("Id is blank");
+            var userFound = _ctx.Users.Join(
+                _ctx.Roles,
+                user => user.RoleId,
+                role => role.Id,
+                (user, role) => new { User = user, Role = role })
+            .Where(userRole => userRole.Role.Id == userRole.User.RoleId && userRole.User.Id == id).FirstOrDefault();
+
+            return userFound.User;
         }
     }
 }
