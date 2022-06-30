@@ -24,7 +24,7 @@ namespace Ecommerce.Models
         //testing
         public override string ToString()
         {
-            return $"{Username} - {Email}";
+            return $"{Username} - {Email} - {Role}";
         }
     }
 }

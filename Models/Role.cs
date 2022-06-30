@@ -4,5 +4,11 @@ namespace Ecommerce.Models
     {
         public int Id { get; set; }
         public string? RoleName { get; set; }
+
+        // testing
+        public override string ToString()
+        {
+            return $"{RoleName}";
+        }
     }
 }
