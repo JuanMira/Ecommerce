@@ -47,6 +47,7 @@ namespace Ecommerce.Repository
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]{
+                    new Claim("user_id", userFound.User.Id.ToString()),
                     new Claim(ClaimTypes.Name, userFound.User.Username),
                     new Claim(ClaimTypes.Email, userFound.User.Email),
                     new Claim(ClaimTypes.Role, userFound.Role.RoleName),
