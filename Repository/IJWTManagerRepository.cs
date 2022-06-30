@@ -4,6 +4,6 @@ namespace Ecommerce.Repository
 {
     public interface IJWTManagerRepository
     {
-        Task<Tokens> Authenticate(string username, string password);
+        Tokens Authenticate(string username, string password);
     }
 }

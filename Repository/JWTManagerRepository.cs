@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using Ecommerce.Data;
 using Ecommerce.Models;
@@ -19,19 +20,24 @@ namespace Ecommerce.Repository
             _ctx = ctx;
         }
 
-        async public Task<Tokens> Authenticate(string username, string password)
+        public Tokens Authenticate(string username, string password)
         {
             if (username == null && password == null)
                 throw new Exception("User not found");
 
-            var userFound = await _ctx.Users.Where(x => x.Username.Equals(username)).FirstAsync();
+            var userFound = _ctx.Users.Join(
+                _ctx.Roles,
+                user => user.RoleId,
+                role => role.Id,
+                (user, role) => new { User = user, Role = role })
+            .Where(userRole => userRole.Role.Id == userRole.User.RoleId && userRole.User.Username == username).FirstOrDefault();
 
             if (userFound == null)
                 throw new Exception("Can't find user");
 
 
             // validate password
-            var isValid = Helpers.PasswordHelper.Compare(password, userFound?.Password);
+            var isValid = Helpers.PasswordHelper.Compare(password, userFound?.User.Password);
 
             if (!isValid)
                 throw new Exception("Password didn't match");
@@ -41,9 +47,9 @@ namespace Ecommerce.Repository
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]{
-                    new Claim(ClaimTypes.Name, userFound?.Username),
-                    new Claim(ClaimTypes.Email, userFound?.Email),
-                    new Claim(ClaimTypes.Role, userFound?.Role?.RoleName),
+                    new Claim(ClaimTypes.Name, userFound.User.Username),
+                    new Claim(ClaimTypes.Email, userFound.User.Email),
+                    new Claim(ClaimTypes.Role, userFound.Role.RoleName),
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
